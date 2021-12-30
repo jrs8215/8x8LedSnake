@@ -40,3 +40,43 @@ void loop() {
   // put your main code here, to run repeatedly:
 
 }
+
+/*
+ * refresh goes through each led and quickly lights it up if denoted by a 1, meaning it should light up.
+ * Calling that funciton in a loop very quiickly has the effect of the lights being statically lighted.
+ * Params: N/A
+ * Returns: N/A
+ */
+void refresh() {
+  for(int c = 0; c < sizeof(col); c++)
+    for(int r = 0; r < sizeof(row); r++)
+      //if a certain led is marked by a 1, then should be on
+      if(matrix[c][r] == 1) {
+        //Led is lighted when col is high and row is low, creating potentail difference
+        digitalWrite(col[c], HIGH);
+        digitalWrite(row[r], LOW);
+        delay(1);
+        reset();
+      }
+}
+
+void reset() {
+  for(int i = 0; i < sizeof(row); i++) {
+      digitalWrite(row[i], HIGH);
+      digitalWrite(col[i], LOW);
+  }
+}
+
+/*
+ * modifyLed has two purposes, to remove or to add an Led to the board
+ * Params: col, column in which specified LED is located at
+ *         row, row in which specified LED is located at
+ *         val, 0 to remove LED, 1 to add LED
+ * Returns: true if successful, false otherwise
+ */
+bool modifyLed(int col, int row, int val) {
+  if(col >= 8 || col < 0|| row >= 8 || row < 0)
+    return false;
+  matrix[col][row] = val;
+  return true;
+}
