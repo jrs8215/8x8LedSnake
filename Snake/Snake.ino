@@ -17,19 +17,19 @@
 #define COL_8 A4
 
 /*
- * This program is the game snake, which is played on an 8x8 Led matrix, which is powered by an arduino uno.
- * @author: Jack Sipley
- * @Date: 12/29/2021
- */
+   This program is the game snake, which is played on an 8x8 Led matrix, which is powered by an arduino uno.
+   @author: Jack Sipley
+   @Date: 12/29/2021
+*/
 
 const byte row[] = { ROW_1, ROW_2, ROW_3, ROW_4, ROW_5, ROW_6, ROW_7, ROW_8 };
-const byte col[] = { COL_1,COL_2, COL_3, COL_4, COL_5, COL_6, COL_7, COL_8 };
+const byte col[] = { COL_1, COL_2, COL_3, COL_4, COL_5, COL_6, COL_7, COL_8 };
 int matrix[8][8];     //2D array to represents all leds on the board
 
 void setup() {
   // put your setup code here, to run once:
   // Set all pins used to output for the LED Matrix
-  for(int i = 0; i < sizeof(row); i++) {
+  for (int i = 0; i < sizeof(row); i++) {
     pinMode(row[i], OUTPUT);  //Initialize row pinout on the arduino
     pinMode(col[i], OUTPUT);  //Initialize column pinout on the arduino
   }
@@ -42,16 +42,16 @@ void loop() {
 }
 
 /*
- * refresh goes through each led and quickly lights it up if denoted by a 1, meaning it should light up.
- * Calling that funciton in a loop very quiickly has the effect of the lights being statically lighted.
- * Params: N/A
- * Returns: N/A
- */
+   refresh goes through each led and quickly lights it up if denoted by a 1, meaning it should light up.
+   Calling that funciton in a loop very quiickly has the effect of the lights being statically lighted.
+   Params: N/A
+   Returns: N/A
+*/
 void refresh() {
-  for(int c = 0; c < sizeof(col); c++)
-    for(int r = 0; r < sizeof(row); r++)
+  for (int c = 0; c < sizeof(col); c++)
+    for (int r = 0; r < sizeof(row); r++)
       //if a certain led is marked by a 1, then should be on
-      if(matrix[c][r] == 1) {
+      if (matrix[c][r] == 1) {
         //Led is lighted when col is high and row is low, creating potentail difference
         digitalWrite(col[c], HIGH);
         digitalWrite(row[r], LOW);
@@ -61,22 +61,42 @@ void refresh() {
 }
 
 void reset() {
-  for(int i = 0; i < sizeof(row); i++) {
-      digitalWrite(row[i], HIGH);
-      digitalWrite(col[i], LOW);
+  for (int i = 0; i < sizeof(row); i++) {
+    digitalWrite(row[i], HIGH);
+    digitalWrite(col[i], LOW);
   }
 }
 
 /*
- * modifyLed has two purposes, to remove or to add an Led to the board
- * Params: col, column in which specified LED is located at
- *         row, row in which specified LED is located at
- *         val, 0 to remove LED, 1 to add LED
- * Returns: true if successful, false otherwise
- */
+   modifyLed sets the state of a cell on the led matrix
+   Params: col, column in which specified LED is located at
+           row, row in which specified LED is located at
+           val, 0 for no LED, 1 to present LED, 2 for present LED and if that LED is a point
+   Returns: true if successful, false otherwise
+*/
 bool modifyLed(int col, int row, int val) {
-  if(col >= 8 || col < 0|| row >= 8 || row < 0)
+  if (col >= 8 || col < 0 || row >= 8 || row < 0)
     return false;
   matrix[col][row] = val;
   return true;
+}
+
+/*
+   Generates a new point on the board for the snake to get
+   Preconditon: there is empty room on the board for the point to be placed
+   Params: N/A
+   Returns: N/A
+*/
+void generatePoint() {
+  int randRow;
+  int randCol;
+  while (true) {
+    randRow = random(8);
+    randCol = random(8);
+    //check to see if generated coord is occupied by snake coord
+    if (matrix[randRow][randCol] == 0) {
+      matrix[randRow][randCol] = 2;
+      break;
+    }
+  }
 }
