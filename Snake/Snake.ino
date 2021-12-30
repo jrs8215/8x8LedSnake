@@ -1,3 +1,5 @@
+#include <Console.h>
+
 #define ROW_1 2
 #define ROW_2 3
 #define ROW_3 4
@@ -6,7 +8,6 @@
 #define ROW_6 7
 #define ROW_7 8
 #define ROW_8 9
-
 #define COL_1 10
 #define COL_2 11
 #define COL_3 12
@@ -26,6 +27,9 @@ const byte row[] = { ROW_1, ROW_2, ROW_3, ROW_4, ROW_5, ROW_6, ROW_7, ROW_8 };
 const byte col[] = { COL_1, COL_2, COL_3, COL_4, COL_5, COL_6, COL_7, COL_8 };
 int matrix[8][8];     //2D array to represents all leds on the board
 
+int headCol;
+int headRow;
+
 void setup() {
   // put your setup code here, to run once:
   // Set all pins used to output for the LED Matrix
@@ -34,11 +38,20 @@ void setup() {
     pinMode(col[i], OUTPUT);  //Initialize column pinout on the arduino
   }
   Serial.begin(9600);       //Open serial port, sets data rate to 9600 bps
+  headCol = 0;
+  headRow = 0;
+  modifyLed(headCol, headRow, 1); //Snake starts at coordinate (0,0)
 }
 
 void loop() {
   // put your main code here, to run repeatedly:
-
+  for(int i = 0; i < 100; i++) {
+    refresh();
+    delay(5);
+  }
+  makeMove(0,500);
+  modifyLed(headCol, headRow, 1);
+  modifyLed(headCol -1, headRow, 0);
 }
 
 /*
@@ -104,6 +117,21 @@ void generatePoint() {
 /*
  * moves the snake by 1 unit
  */
-bool makeMove(int dir, int timeDelay, int coord) {
-  
+bool makeMove(char dir, int timeDelay) {
+  switch (dir) {
+    case 'd':    //Move left
+      headCol++;
+      break;
+    case 'a':    //Move right
+      break;
+      headCol--;
+    case 'w':    //Move up
+      headRow++;
+      break;
+    case 's':    //Move down
+      headRow--;
+      break;
+    default:     //Key other than wasd was pressed, do nothing
+      break;
+  }
 }
