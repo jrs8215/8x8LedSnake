@@ -100,3 +100,10 @@ void generatePoint() {
     }
   }
 }
+
+/*
+ * moves the snake by 1 unit
+ */
+bool makeMove(int dir, int timeDelay, int coord) {
+  
+}
