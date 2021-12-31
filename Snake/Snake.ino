@@ -30,6 +30,9 @@ int matrix[8][8];     //2D array to represents all leds on the board
 int headCol;
 int headRow;
 
+String currDirection;
+int temp;
+
 void setup() {
   // put your setup code here, to run once:
   // Set all pins used to output for the LED Matrix
@@ -45,13 +48,19 @@ void setup() {
 
 void loop() {
   // put your main code here, to run repeatedly:
-  for(int i = 0; i < 100; i++) {
+  for (int i = 0; i < 100; i++) {
     refresh();
-    delay(5);
+    delay(10);
   }
-  makeMove(0,500);
-  modifyLed(headCol, headRow, 1);
-  modifyLed(headCol -1, headRow, 0);
+  if (Serial.available() != 0) {
+    //currDirection = Serial.readString();
+    temp = Serial.parseInt();
+    serialFlush();
+  }
+  Serial.print(currDirection);
+  makeMove(temp);
+  Serial.print(headRow);
+  Serial.print(headCol);
 }
 
 /*
@@ -115,23 +124,33 @@ void generatePoint() {
 }
 
 /*
- * moves the snake by 1 unit
- */
-bool makeMove(char dir, int timeDelay) {
-  switch (dir) {
-    case 'd':    //Move left
-      headCol++;
-      break;
-    case 'a':    //Move right
-      break;
-      headCol--;
-    case 'w':    //Move up
-      headRow++;
-      break;
-    case 's':    //Move down
-      headRow--;
-      break;
-    default:     //Key other than wasd was pressed, do nothing
-      break;
+   moves the snake by 1 unit
+*/
+bool makeMove(int dir) {
+  if (dir == 1) {
+    headRow++;
+    modifyLed(headCol, headRow, 1);
+    modifyLed(headCol, headRow - 1, 0);
+  }
+  if (dir == 2) {
+    headCol++;
+    modifyLed(headCol, headRow, 1);
+    modifyLed(headCol - 1, headRow, 0);
+  }
+  if (dir == 3) {
+    headRow--;
+    modifyLed(headCol, headRow, 1);
+    modifyLed(headCol, headRow + 1, 0);
+  }
+  if (dir == 4) {
+    headCol--;
+    modifyLed(headCol, headRow, 1);
+    modifyLed(headCol + 1, headRow, 0);
+  }
+}
+
+void serialFlush() {
+  while (Serial.available() > 0) {
+    char t = Serial.read();
   }
 }
