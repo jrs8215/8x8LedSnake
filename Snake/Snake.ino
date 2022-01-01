@@ -1,3 +1,4 @@
+#include <LinkedList.h>
 #include <Console.h>
 
 #define ROW_1 2
@@ -41,8 +42,8 @@ void setup() {
     pinMode(col[i], OUTPUT);  //Initialize column pinout on the arduino
   }
   Serial.begin(9600);       //Open serial port, sets data rate to 9600 bps
-  headCol = 0;
-  headRow = 0;
+  headCol = 3;
+  headRow = 3;
   modifyLed(headCol, headRow, 1); //Snake starts at coordinate (0,0)
 }
 
@@ -59,8 +60,6 @@ void loop() {
   }
   Serial.print(currDirection);
   makeMove(temp);
-  Serial.print(headRow);
-  Serial.print(headCol);
 }
 
 /*
