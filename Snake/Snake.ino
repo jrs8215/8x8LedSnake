@@ -31,6 +31,7 @@ int matrix[8][8];     //2D array to represents all leds on the board
 LinkedList<Coordinate> snakeList; //Declare a linked list of coordinates on the matrix, will serve as the snake
 
 int temp; //used for direction w/ keys 1-4 
+Coordinate headCoord;
 
 void setup() {
   // put your setup code here, to run once:
@@ -128,32 +129,31 @@ void generatePoint() {
 }
 
 /*
-   moves the snake by 1 unit
+   Moves the snake head point by 1 in the given direction
 */
 bool makeMove(int dir) {
-  int headCol = snakeList.get(0).getCol();
-  int headRow = snakeList.get(0).getRow();
-  
+  headCoord = snakeList.get(0);
   if (dir == 1) {
-    headRow++;
-    modifyLed(headCol, headRow, 1);
-    modifyLed(headCol, headRow - 1, 0);
+    modifyLed(headCoord.getCol(), headCoord.getRow(), 0);
+    headCoord.shiftUp();
+    modifyLed(headCoord.getCol(), headCoord.getRow(), 1);
   }
   if (dir == 2) {
-    headCol++;
-    modifyLed(headCol, headRow, 1);
-    modifyLed(headCol - 1, headRow, 0);
+    modifyLed(headCoord.getCol(), headCoord.getRow(), 0);
+    headCoord.shiftLeft();
+    modifyLed(headCoord.getCol(), headCoord.getRow(), 1);
   }
   if (dir == 3) {
-    headRow--;
-    modifyLed(headCol, headRow, 1);
-    modifyLed(headCol, headRow + 1, 0);
+    modifyLed(headCoord.getCol(), headCoord.getRow(), 0);
+    headCoord.shiftDown();
+    modifyLed(headCoord.getCol(), headCoord.getRow(), 1);
   }
   if (dir == 4) {
-    headCol--;
-    modifyLed(headCol, headRow, 1);
-    modifyLed(headCol + 1, headRow, 0);
+    modifyLed(headCoord.getCol(), headCoord.getRow(), 0);
+    headCoord.shiftRight();
+    modifyLed(headCoord.getCol(), headCoord.getRow(), 1);
   }
+  snakeList.set(0, headCoord);
 }
 
 void serialFlush() {
