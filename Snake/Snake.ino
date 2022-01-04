@@ -30,6 +30,8 @@ const byte col[] = { COL_1, COL_2, COL_3, COL_4, COL_5, COL_6, COL_7, COL_8 };
 int matrix[8][8];     //2D array to represents all leds on the board
 LinkedList<Coordinate> snakeList; //Declare a linked list of coordinates on the matrix, will serve as the snake
 
+int temp; //used for direction w/ keys 1-4 
+
 void setup() {
   // put your setup code here, to run once:
   // Set all pins used to output for the LED Matrix
@@ -62,7 +64,6 @@ void loop() {
     temp = Serial.parseInt();
     serialFlush();
   }
-  Serial.print(currDirection);
   makeMove(temp);
 }
 
@@ -130,6 +131,9 @@ void generatePoint() {
    moves the snake by 1 unit
 */
 bool makeMove(int dir) {
+  int headCol = snakeList.get(0).getCol();
+  int headRow = snakeList.get(0).getRow();
+  
   if (dir == 1) {
     headRow++;
     modifyLed(headCol, headRow, 1);
