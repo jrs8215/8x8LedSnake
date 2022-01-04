@@ -1,3 +1,4 @@
+#include <Coordinate.h>
 #include <LinkedList.h>
 #include <Console.h>
 
