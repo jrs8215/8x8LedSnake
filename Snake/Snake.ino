@@ -28,12 +28,7 @@
 const byte row[] = { ROW_1, ROW_2, ROW_3, ROW_4, ROW_5, ROW_6, ROW_7, ROW_8 };
 const byte col[] = { COL_1, COL_2, COL_3, COL_4, COL_5, COL_6, COL_7, COL_8 };
 int matrix[8][8];     //2D array to represents all leds on the board
-
-int headCol;
-int headRow;
-
-String currDirection;
-int temp;
+LinkedList<Coordinate> snakeList; //Declare a linked list of coordinates on the matrix, will serve as the snake
 
 void setup() {
   // put your setup code here, to run once:
@@ -43,9 +38,17 @@ void setup() {
     pinMode(col[i], OUTPUT);  //Initialize column pinout on the arduino
   }
   Serial.begin(9600);       //Open serial port, sets data rate to 9600 bps
+  snakeList = LinkedList<Coordinate>(); //Instantiate snakeList
+
+  Coordinate headCoord = Coordinate(3, 3); //Have the head coordinate start at position (3,3) on matrix
+  snakeList.add(headCoord);                //Add headCoord to snake
+  modifyLed(headCoord.getCol(), headCoord.getRow(), 1); //Snake starts at coordinate (0,0)
+
+  /*
   headCol = 3;
   headRow = 3;
   modifyLed(headCol, headRow, 1); //Snake starts at coordinate (0,0)
+  */
 }
 
 void loop() {
