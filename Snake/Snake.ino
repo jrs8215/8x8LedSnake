@@ -27,11 +27,10 @@
 
 const byte row[] = { ROW_1, ROW_2, ROW_3, ROW_4, ROW_5, ROW_6, ROW_7, ROW_8 };
 const byte col[] = { COL_1, COL_2, COL_3, COL_4, COL_5, COL_6, COL_7, COL_8 };
-int matrix[8][8];     //2D array to represents all leds on the board
+//int matrix[8][8];     //2D array to represents all leds on the board
 LinkedList<Coordinate> snakeList; //Declare a linked list of coordinates on the matrix, will serve as the snake
 
 int temp; //used for direction w/ keys 1-4 
-Coordinate headCoord;
 
 void setup() {
   // put your setup code here, to run once:
@@ -42,10 +41,10 @@ void setup() {
   }
   Serial.begin(9600);       //Open serial port, sets data rate to 9600 bps
   snakeList = LinkedList<Coordinate>(); //Instantiate snakeList
-
-  Coordinate headCoord = Coordinate(3, 3); //Have the head coordinate start at position (3,3) on matrix
-  snakeList.add(headCoord);                //Add headCoord to snake
-  modifyLed(headCoord.getCol(), headCoord.getRow(), 1); //Snake starts at coordinate (0,0)
+  
+  snakeList.add(Coordinate(0,0));                //Add headCoord to snake
+  //modifyLed(headCoord.getCol(), headCoord.getRow(), 1); //Snake starts at coordinate (0,0)
+  //refresh();
 
   /*
   headCol = 3;
@@ -58,7 +57,7 @@ void loop() {
   // put your main code here, to run repeatedly:
   for (int i = 0; i < 100; i++) {
     refresh();
-    delay(10);
+    delay(5);
   }
   if (Serial.available() != 0) {
     //currDirection = Serial.readString();
@@ -73,18 +72,33 @@ void loop() {
    Calling that funciton in a loop very quiickly has the effect of the lights being statically lighted.
    Params: N/A
    Returns: N/A
-*/
+
 void refresh() {
+  int i = 0;
   for (int c = 0; c < sizeof(col); c++)
-    for (int r = 0; r < sizeof(row); r++)
+    for (int r = 0; r < sizeof(row); r++) {
       //if a certain led is marked by a 1, then should be on
-      if (matrix[c][r] == 1) {
+      ///if (matrix[c][r] == 1) {
+        if (snakeList.get(i).equals(Coordinate(r, c)) {
         //Led is lighted when col is high and row is low, creating potentail difference
         digitalWrite(col[c], HIGH);
         digitalWrite(row[r], LOW);
         delay(1);
         reset();
+        }
+        i++;
+        }
       }
+}
+*/
+
+void refresh() {
+  for (int i = 0; i < snakeList.size(); i++) {
+    digitalWrite(col[snakeList.get(i).getCol()], HIGH);
+    digitalWrite(row[snakeList.get(i).getRow()], LOW);
+    delay(5);
+    reset();
+  }
 }
 
 void reset() {
@@ -100,20 +114,21 @@ void reset() {
            row, row in which specified LED is located at
            val, 0 for no LED, 1 to present LED, 2 for present LED and if that LED is a point
    Returns: true if successful, false otherwise
-*/
+
 bool modifyLed(int col, int row, int val) {
   if (col >= 8 || col < 0 || row >= 8 || row < 0)
     return false;
   matrix[col][row] = val;
   return true;
 }
+*/
 
 /*
    Generates a new point on the board for the snake to get
    Preconditon: there is empty room on the board for the point to be placed
    Params: N/A
    Returns: N/A
-*/
+
 void generatePoint() {
   int randRow;
   int randCol;
@@ -127,33 +142,35 @@ void generatePoint() {
     }
   }
 }
+*/
 
 /*
    Moves the snake head point by 1 in the given direction
 */
 bool makeMove(int dir) {
-  headCoord = snakeList.get(0);
+  Coordinate headCoord = snakeList.get(0);
   if (dir == 1) {
-    modifyLed(headCoord.getCol(), headCoord.getRow(), 0);
+    //modifyLed(headCoord.getCol(), headCoord.getRow(), 0);
     headCoord.shiftUp();
-    modifyLed(headCoord.getCol(), headCoord.getRow(), 1);
+   // modifyLed(headCoord.getCol(), headCoord.getRow(), 1);
   }
   if (dir == 2) {
-    modifyLed(headCoord.getCol(), headCoord.getRow(), 0);
+   // modifyLed(headCoord.getCol(), headCoord.getRow(), 0);
     headCoord.shiftLeft();
-    modifyLed(headCoord.getCol(), headCoord.getRow(), 1);
+   // modifyLed(headCoord.getCol(), headCoord.getRow(), 1);
   }
   if (dir == 3) {
-    modifyLed(headCoord.getCol(), headCoord.getRow(), 0);
+   // modifyLed(headCoord.getCol(), headCoord.getRow(), 0);
     headCoord.shiftDown();
-    modifyLed(headCoord.getCol(), headCoord.getRow(), 1);
+   // modifyLed(headCoord.getCol(), headCoord.getRow(), 1);
   }
   if (dir == 4) {
-    modifyLed(headCoord.getCol(), headCoord.getRow(), 0);
+  //  modifyLed(headCoord.getCol(), headCoord.getRow(), 0);
     headCoord.shiftRight();
-    modifyLed(headCoord.getCol(), headCoord.getRow(), 1);
+  //  modifyLed(headCoord.getCol(), headCoord.getRow(), 1);
   }
-  snakeList.set(0, headCoord);
+  snakeList.add(0, headCoord);
+  snakeList.remove(snakeList.size() -1);
 }
 
 void serialFlush() {
