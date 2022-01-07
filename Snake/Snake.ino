@@ -40,10 +40,16 @@ void setup() {
     pinMode(col[i], OUTPUT);  //Initialize column pinout on the arduino
   }
   Serial.begin(9600);       //Open serial port, sets data rate to 9600 bps
+  // if analog input pin 0 is unconnected, random analog
+  // noise will cause the call to randomSeed() to generate
+  // different seed numbers each time the sketch runs.
+  // randomSeed() will then shuffle the random function.
+  randomSeed(analogRead(0));
+  
   snakeList = LinkedList<Coordinate>(); //Instantiate snakeList
   
   snakeList.add(Coordinate(3,3,1));                //Set starting point at position (3,3)
-  
+  currentPoint = generatePoint();
 }
 
 void loop() {
@@ -56,6 +62,11 @@ void loop() {
     serialFlush();
   }
   makeMove(direct);
+  //If the snake has collected the current point on board
+  if(snakeList.get(0).equals(currentPoint)) {
+    addTailPoint();   //Add a unit length onto the end of the snake
+    currentPoint = generatePoint(); //Generate a new point to display on the board
+  }
 }
 
 /*
@@ -71,6 +82,10 @@ void refresh() {
     delay(1);
     reset();
   }
+  digitalWrite(col[currentPoint.getCol()], HIGH);
+  digitalWrite(row[currentPoint.getRow()], LOW);
+  delay(1);
+  reset();
 }
 
 void reset() {
@@ -90,7 +105,9 @@ Coordinate generatePoint() {
   Coordinate point;
   int duplicateFlag;
   while (true) {
-    point = Coordinate(random(8), random(8));
+    int row = random(8);
+    int col = random(8);
+    point = Coordinate(row, col);
     duplicateFlag = 0;
     //check to see if generated coord is occupied by snake coord
     for(int i = 0; i < snakeList.size() -1; i++)
@@ -99,6 +116,7 @@ Coordinate generatePoint() {
     if(duplicateFlag == 0)
       break;
   }
+  return point;
 }
 
 /*
