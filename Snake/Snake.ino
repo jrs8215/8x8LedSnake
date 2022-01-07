@@ -28,8 +28,9 @@
 const byte row[] = { ROW_1, ROW_2, ROW_3, ROW_4, ROW_5, ROW_6, ROW_7, ROW_8 };
 const byte col[] = { COL_1, COL_2, COL_3, COL_4, COL_5, COL_6, COL_7, COL_8 };
 LinkedList<Coordinate> snakeList; //Declare a linked list of coordinates on the matrix, will serve as the snake
+Coordinate currentPoint;          //Declare a Coordinate object that will serve as the current point the user is trying to obtain
 
-int temp; //used for direction w/ keys 1-4 
+int direct; //used for direction w/ keys 1-4 
 
 void setup() {
   // put your setup code here, to run once:
@@ -41,24 +42,20 @@ void setup() {
   Serial.begin(9600);       //Open serial port, sets data rate to 9600 bps
   snakeList = LinkedList<Coordinate>(); //Instantiate snakeList
   
-  snakeList.add(Coordinate(3,3));                //Set starting point at position (3,3)
-  snakeList.add(Coordinate(3,2));
-  snakeList.add(Coordinate(3,1));
-  snakeList.add(Coordinate(3,1));
+  snakeList.add(Coordinate(3,3,1));                //Set starting point at position (3,3)
+  
 }
 
 void loop() {
   // put your main code here, to run repeatedly:
-  for (int i = 0; i < 100; i++) {
+  for (int i = 0; i < 500; i++) {
     refresh();
-    delay(5);
   }
   if (Serial.available() != 0) {
-    //currDirection = Serial.readString();
-    temp = Serial.parseInt();
+    direct = Serial.parseInt();
     serialFlush();
   }
-  makeMove(temp);
+  makeMove(direct);
 }
 
 /*
@@ -71,7 +68,7 @@ void refresh() {
   for (int i = 0; i < snakeList.size(); i++) {
     digitalWrite(col[snakeList.get(i).getCol()], HIGH);
     digitalWrite(row[snakeList.get(i).getRow()], LOW);
-    delay(5);
+    delay(1);
     reset();
   }
 }
@@ -88,21 +85,21 @@ void reset() {
    Preconditon: there is empty room on the board for the point to be placed
    Params: N/A
    Returns: N/A
-
-void generatePoint() {
-  int randRow;
-  int randCol;
+*/
+Coordinate generatePoint() {
+  Coordinate point;
+  int duplicateFlag;
   while (true) {
-    randRow = random(8);
-    randCol = random(8);
+    point = Coordinate(random(8), random(8));
+    duplicateFlag = 0;
     //check to see if generated coord is occupied by snake coord
-    if (matrix[randRow][randCol] == 0) {
-      matrix[randRow][randCol] = 2;
+    for(int i = 0; i < snakeList.size() -1; i++)
+      if(point.equals(snakeList.get(i)))
+        duplicateFlag = 1;
+    if(duplicateFlag == 0)
       break;
-    }
   }
 }
-*/
 
 /*
    Moves the snake head point by 1 in the given direction
@@ -110,27 +107,42 @@ void generatePoint() {
 bool makeMove(int dir) {
   Coordinate headCoord = snakeList.get(0);
   if (dir == 1) {
-    //modifyLed(headCoord.getCol(), headCoord.getRow(), 0);
     headCoord.shiftUp();
-   // modifyLed(headCoord.getCol(), headCoord.getRow(), 1);
+    headCoord.setDir(1);
   }
   if (dir == 2) {
-   // modifyLed(headCoord.getCol(), headCoord.getRow(), 0);
     headCoord.shiftLeft();
-   // modifyLed(headCoord.getCol(), headCoord.getRow(), 1);
+    headCoord.setDir(2);
   }
   if (dir == 3) {
-   // modifyLed(headCoord.getCol(), headCoord.getRow(), 0);
     headCoord.shiftDown();
-   // modifyLed(headCoord.getCol(), headCoord.getRow(), 1);
+    headCoord.setDir(3);
   }
   if (dir == 4) {
-  //  modifyLed(headCoord.getCol(), headCoord.getRow(), 0);
     headCoord.shiftRight();
-  //  modifyLed(headCoord.getCol(), headCoord.getRow(), 1);
+    headCoord.setDir(4);
   }
   snakeList.add(0, headCoord);
-  snakeList.remove(snakeList.size() -1);
+  snakeList.remove(snakeList.size() -1); //Remove the last element in the snake, has illusion that it's moving
+}
+void addTailPoint() {
+  Coordinate endpoint = snakeList.get(snakeList.size() -1); //Get the last element in the list
+  Coordinate newPoint = endpoint;
+  switch (endpoint.getDir()) {
+    case 1:
+      newPoint.shiftDown();
+      break;
+    case 2:
+      newPoint.shiftLeft();
+      break;
+    case 3:
+      newPoint.shiftUp();
+      break;
+    case 4:
+      newPoint.shiftRight();
+      break;
+  }
+  snakeList.add(newPoint);
 }
 
 void serialFlush() {
