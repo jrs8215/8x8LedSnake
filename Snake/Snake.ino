@@ -25,43 +25,47 @@
    @Date: 12/29/2021
 */
 
-const byte row[] = { ROW_1, ROW_2, ROW_3, ROW_4, ROW_5, ROW_6, ROW_7, ROW_8 };
-const byte col[] = { COL_1, COL_2, COL_3, COL_4, COL_5, COL_6, COL_7, COL_8 };
+const byte row[] = { ROW_1, ROW_2, ROW_3, ROW_4, ROW_5, ROW_6, ROW_7, ROW_8 };  //Array that holds the pinout for rows 0-7
+const byte col[] = { COL_1, COL_2, COL_3, COL_4, COL_5, COL_6, COL_7, COL_8 };  //Array that holds the pinout for columns 0-7
 LinkedList<Coordinate> snakeList; //Declare a linked list of coordinates on the matrix, will serve as the snake
 Coordinate currentPoint;          //Declare a Coordinate object that will serve as the current point the user is trying to obtain
 
 int direct; //used for direction w/ keys 1-4 
 
 void setup() {
-  // put your setup code here, to run once:
   // Set all pins used to output for the LED Matrix
   for (int i = 0; i < sizeof(row); i++) {
     pinMode(row[i], OUTPUT);  //Initialize row pinout on the arduino
     pinMode(col[i], OUTPUT);  //Initialize column pinout on the arduino
   }
   Serial.begin(9600);       //Open serial port, sets data rate to 9600 bps
-  // if analog input pin 0 is unconnected, random analog
-  // noise will cause the call to randomSeed() to generate
-  // different seed numbers each time the sketch runs.
-  // randomSeed() will then shuffle the random function.
-  randomSeed(analogRead(0));
+  /* From arduino random() reference:
+   * if analog input pin 0 is unconnected, random analog
+   * noise will cause the call to randomSeed() to generate
+   * different seed numbers each time the sketch runs.
+   * randomSeed() will then shuffle the random function.
+  */ 
+  randomSeed(analogRead(5));  //A5 (analog pin 5 is unconnected in this circuit) therefore will generate random seed each time
   
   snakeList = LinkedList<Coordinate>(); //Instantiate snakeList
   
-  snakeList.add(Coordinate(3,3,1));                //Set starting point at position (3,3)
-  currentPoint = generatePoint();
+  snakeList.add(Coordinate(3,6,1));     //Set starting place for snake at position (3,6)
+  currentPoint = Coordinate(3,3);       //Set the initial point at (3,3)
 }
 
 void loop() {
-  // put your main code here, to run repeatedly:
-  for (int i = 0; i < 500; i++) {
+  //Have the display show for a period of time (300 ms)
+  //Current problem, delay get longer as more leds are light up on the board
+  for (int i = 0; i < 300; i++) {
     refresh();
   }
+  //If the user has inputted a value
   if (Serial.available() != 0) {
-    direct = Serial.parseInt();
-    serialFlush();
+    direct = Serial.parseInt(); //User enters direction for which the snake to travel
+    serialFlush();  //Flush other serial data in the queue
   }
-  makeMove(direct);
+  makeMove(direct); //Make a move with the given direction entered by the user
+  
   //If the snake has collected the current point on board
   if(snakeList.get(0).equals(currentPoint)) {
     addTailPoint();   //Add a unit length onto the end of the snake
@@ -76,18 +80,26 @@ void loop() {
    Returns: N/A
 */
 void refresh() {
+  //For each led that makes up the snake, turn on each led of the snake
   for (int i = 0; i < snakeList.size(); i++) {
     digitalWrite(col[snakeList.get(i).getCol()], HIGH);
     digitalWrite(row[snakeList.get(i).getRow()], LOW);
-    delay(1);
-    reset();
+    delay(1); //Short delay, otherwise LEDs wouldn't be visible
+    reset();  //Reset changes to be ready for next LED
   }
+  //Same logic for snake shown above
   digitalWrite(col[currentPoint.getCol()], HIGH);
   digitalWrite(row[currentPoint.getRow()], LOW);
   delay(1);
   reset();
 }
 
+/*  Reset sets all the rows to high and all the 
+ *  columns back to low, which allows for all
+ *  LEDs to be individually lighten up
+ *  Params: N/A
+ *  Returns: N/A
+ */
 void reset() {
   for (int i = 0; i < sizeof(row); i++) {
     digitalWrite(row[i], HIGH);
@@ -99,53 +111,62 @@ void reset() {
    Generates a new point on the board for the snake to get
    Preconditon: there is empty room on the board for the point to be placed
    Params: N/A
-   Returns: N/A
+   Returns: point, randomly generated cordinate. 
+   Precondition: point is not a point on the snake.
 */
 Coordinate generatePoint() {
-  Coordinate point;
-  int duplicateFlag;
+  Coordinate point; //Point to be randomly generated and returned
+  int duplicateFlag;  //Flag to determine if random coordinate is already occipied by snake
   while (true) {
-    int row = random(8);
-    int col = random(8);
-    point = Coordinate(row, col);
+    point = Coordinate(random(8), random(8)); //generate random point
     duplicateFlag = 0;
     //check to see if generated coord is occupied by snake coord
     for(int i = 0; i < snakeList.size() -1; i++)
       if(point.equals(snakeList.get(i)))
-        duplicateFlag = 1;
-    if(duplicateFlag == 0)
+        duplicateFlag = 1;  //point generated is on the snake, loop again
+    if(duplicateFlag == 0)  //Point not occupied by snake
       break;
   }
   return point;
 }
 
-/*
-   Moves the snake head point by 1 in the given direction
+/*  makeMove moves the snake by one unit
+ *  params: dir, direction for the snake to move
+ *  returns: true if valid move, false otherwise
 */
 bool makeMove(int dir) {
-  Coordinate headCoord = snakeList.get(0);
-  if (dir == 1) {
-    headCoord.shiftUp();
-    headCoord.setDir(1);
+  Coordinate headCoord = snakeList.get(0);  //Create new coordinate that will take place for head of snake
+  switch (dir) {
+    case 1: //Move the snake up
+      headCoord.shiftUp();
+      headCoord.setDir(1);
+      break;
+    case 2: //Move snake left
+      headCoord.shiftLeft();
+      headCoord.setDir(2);
+      break;
+    case 3: //Move snake down
+      headCoord.shiftDown();
+      headCoord.setDir(3);
+      break;
+    case 4: //Move snake right
+      headCoord.shiftRight();
+      headCoord.setDir(4);
+      break;
   }
-  if (dir == 2) {
-    headCoord.shiftLeft();
-    headCoord.setDir(2);
-  }
-  if (dir == 3) {
-    headCoord.shiftDown();
-    headCoord.setDir(3);
-  }
-  if (dir == 4) {
-    headCoord.shiftRight();
-    headCoord.setDir(4);
-  }
-  snakeList.add(0, headCoord);
+  snakeList.add(0, headCoord);  //Add coord to front of list 
   snakeList.remove(snakeList.size() -1); //Remove the last element in the snake, has illusion that it's moving
 }
+
+/*
+ * Appends a point to the end of the snake, gets called when the snake collects a point
+ * params: N/A
+ * returns: N/A
+ */
 void addTailPoint() {
   Coordinate endpoint = snakeList.get(snakeList.size() -1); //Get the last element in the list
   Coordinate newPoint = endpoint;
+  //Add the tail point in the direction of the last elements, determined by switch statement below:
   switch (endpoint.getDir()) {
     case 1:
       newPoint.shiftDown();
@@ -160,9 +181,10 @@ void addTailPoint() {
       newPoint.shiftRight();
       break;
   }
-  snakeList.add(newPoint);
+  snakeList.add(newPoint);  //Add tail point to the end of the snake
 }
 
+//serialFlush is used to get rid of any junk in the serial queue
 void serialFlush() {
   while (Serial.available() > 0) {
     char t = Serial.read();
